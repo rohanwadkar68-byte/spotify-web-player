@@ -12,7 +12,7 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #000000;
+  background: #08080b;
   color: #ffffff;
   overflow: hidden;
   font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -20,68 +20,128 @@ body,
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* VisionOS Glassmorphism & Liquid Aurora Tokens */
+/* VisionOS & Liquid Aurora Theme Tokens */
 :root {
   --spotify-green: #1db954;
   --spotify-green-bright: #1ed760;
-  --glass-bg: rgba(22, 22, 26, 0.7);
+  --glass-bg: rgba(22, 22, 28, 0.72);
   --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   --glass-blur: blur(28px);
 }
 
-.visionos-glass {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-}
-
-.visionos-glass-card {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.visionos-glass-card:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
-}
-
-/* Breathing Aurora Ambient Background Mesh */
-@keyframes auroraMesh {
+/* Fluid Aurora Living Background Mesh */
+@keyframes auroraPulse {
   0% {
-    transform: scale(1) translate(0%, 0%);
-    opacity: 0.25;
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+    opacity: 0.35;
   }
-  50% {
-    transform: scale(1.15) translate(4%, -3%);
+  33% {
+    transform: translate(30px, -40px) scale(1.18) rotate(15deg);
+    opacity: 0.55;
+  }
+  66% {
+    transform: translate(-35px, 25px) scale(0.92) rotate(-10deg);
     opacity: 0.4;
   }
   100% {
-    transform: scale(1) translate(0%, 0%);
-    opacity: 0.25;
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+    opacity: 0.35;
   }
 }
 
-.aurora-ambient-glow {
-  position: absolute;
-  filter: blur(90px);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: auroraMesh 10s ease-in-out infinite alternate;
-  will-change: transform, opacity;
+@keyframes spinVinyl {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* Custom Sleek Spotify Scrollbars */
+.animate-spin-slow {
+  animation: spinVinyl 12s linear infinite;
+}
+
+.aurora-orb-1 {
+  position: absolute;
+  top: -10%;
+  left: 15%;
+  width: 55vw;
+  height: 55vw;
+  max-width: 650px;
+  max-height: 650px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  animation: auroraPulse 16s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+  z-index: 0;
+}
+
+.aurora-orb-2 {
+  position: absolute;
+  bottom: -15%;
+  right: 10%;
+  width: 50vw;
+  height: 50vw;
+  max-width: 600px;
+  max-height: 600px;
+  border-radius: 50%;
+  filter: blur(130px);
+  pointer-events: none;
+  animation: auroraPulse 20s ease-in-out infinite alternate-reverse;
+  will-change: transform, opacity;
+  z-index: 0;
+}
+
+/* Glass Capsule & Bento Cards */
+.glass-capsule {
+  background: rgba(26, 26, 32, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.bento-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 255, 255, 0.05);
+}
+
+/* Realistic Vinyl Grooves */
+.vinyl-disc {
+  background: radial-gradient(
+    circle at center,
+    #111 0%,
+    #181818 20%,
+    #0d0d0d 40%,
+    #1c1c1c 60%,
+    #080808 80%,
+    #141414 100%
+  );
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+    inset 0 0 20px rgba(0, 0, 0, 0.9);
+}
+
+/* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -89,19 +149,19 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.35);
 }
 
-/* Custom Slider Styling */
+/* Range Input */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   outline: none;
 }
@@ -114,11 +174,11 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: #ffffff;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
 input[type="range"]:hover::-webkit-slider-thumb {
-  transform: scale(1.25);
+  transform: scale(1.3);
   background: #1ed760;
 }
