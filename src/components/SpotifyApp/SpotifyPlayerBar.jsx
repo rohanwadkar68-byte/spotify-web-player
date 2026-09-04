@@ -74,10 +74,11 @@ export default function SpotifyPlayerBar({ activeView, setActiveView, onOpenMobi
           cursor: 'pointer'
         }}
         onClick={() => {
-          if (window.innerWidth < 768 && onOpenMobileNowPlaying) {
+          if (onOpenMobileNowPlaying) {
             onOpenMobileNowPlaying()
           }
         }}
+        title="Open Full Player (Gestures & 8D Audio)"
       >
         <img
           src={currentTrack.image}
@@ -647,6 +648,32 @@ export default function SpotifyPlayerBar({ activeView, setActiveView, onOpenMobi
             </div>
           </div>
         </div>
+
+        {/* Fullscreen Gesture Player Button */}
+        <button
+          onClick={() => {
+            if (onOpenMobileNowPlaying) onOpenMobileNowPlaying()
+          }}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            color: '#b3b3b3',
+            cursor: 'pointer',
+            padding: 4,
+            display: 'flex',
+            alignItems: 'center'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = '#b3b3b3' }}
+          title="Full Screen Player (Gestures, 8D Spatial, Visualizer)"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+        </button>
       </div>
     </footer>
   )

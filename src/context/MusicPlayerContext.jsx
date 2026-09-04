@@ -189,11 +189,26 @@ export function MusicPlayerProvider({ children }) {
     }
   })
 
+  // Advanced Sound Modes: 'normal' | '8d_spatial' | 'slowed_reverb' | 'nightcore'
+  const SOUND_EFFECT_KEY = 'sneha_spotify_sound_effect_v1'
+  const [soundEffectMode, setSoundEffectModeState] = useState(() => {
+    try {
+      const saved = localStorage.getItem(SOUND_EFFECT_KEY)
+      return saved || 'normal'
+    } catch {
+      return 'normal'
+    }
+  })
+
   const audioRef = useRef(null)
   const audioCtxRef = useRef(null)
   const bassFilterRef = useRef(null)
   const vocalFilterRef = useRef(null)
   const highShelfRef = useRef(null)
+  const pannerRef = useRef(null)
+  const pannerAnimationIdRef = useRef(null)
+  const analyserRef = useRef(null)
+  const [analyserNode, setAnalyserNode] = useState(null)
   const fadeIntervalRef = useRef(null)
   const fetchingRecommendationsRef = useRef(false)
   const originalVolumeRef = useRef(0.85)
@@ -206,7 +221,78 @@ export function MusicPlayerProvider({ children }) {
     }
   }
 
-  // Initialize Web Audio API DSP Pipeline for Pure Studio Clarity
+  const applySoundEffectMode = (mode) => {
+    if (pannerAnimationIdRef.current) {
+      cancelAnimationFrame(pannerAnimationIdRef.current)
+      pannerAnimationIdRef.current = null
+    }
+
+    const audio = audioRef.current
+    const panner = pannerRef.current
+    const bass = bassFilterRef.current
+    const vocal = vocalFilterRef.current
+    const high = highShelfRef.current
+
+    // Reset panner to neutral center
+    if (panner) {
+      if ('pan' in panner && panner.pan) {
+        panner.pan.value = 0
+      } else if (panner.positionX) {
+        panner.positionX.value = 0
+        panner.positionY.value = 0
+        panner.positionZ.value = 1
+      }
+    }
+
+    if (mode === '8d_spatial') {
+      if (audio) audio.playbackRate = 1.0
+      if (bass) bass.gain.value = 2.0
+      if (vocal) vocal.gain.value = 1.5
+      if (high) high.gain.value = -1.0
+
+      let angle = 0
+      const animate8D = () => {
+        angle += 0.02
+        if (pannerRef.current) {
+          const p = pannerRef.current
+          if ('pan' in p && p.pan) {
+            p.pan.value = Math.sin(angle)
+          } else if (p.positionX) {
+            p.positionX.value = Math.sin(angle) * 3
+            p.positionZ.value = Math.cos(angle) * 3
+          }
+        }
+        pannerAnimationIdRef.current = requestAnimationFrame(animate8D)
+      }
+      pannerAnimationIdRef.current = requestAnimationFrame(animate8D)
+    } else if (mode === 'slowed_reverb') {
+      if (audio) audio.playbackRate = 0.88
+      if (bass) bass.gain.value = 3.5
+      if (vocal) vocal.gain.value = 1.0
+      if (high) high.gain.value = -3.5
+    } else if (mode === 'nightcore') {
+      if (audio) audio.playbackRate = 1.15
+      if (bass) bass.gain.value = 0.5
+      if (vocal) vocal.gain.value = 2.0
+      if (high) high.gain.value = 3.0
+    } else {
+      // Normal / Pure Studio Peace Mode
+      if (audio) audio.playbackRate = 1.0
+      if (bass) bass.gain.value = pureSoundMode ? 1.2 : 0
+      if (vocal) vocal.gain.value = pureSoundMode ? 1.6 : 0
+      if (high) high.gain.value = pureSoundMode ? -1.8 : 0
+    }
+  }
+
+  const setSoundEffectMode = (mode) => {
+    setSoundEffectModeState(mode)
+    try {
+      localStorage.setItem(SOUND_EFFECT_KEY, mode)
+    } catch (e) {}
+    applySoundEffectMode(mode)
+  }
+
+  // Initialize Web Audio API DSP Pipeline for Pure Studio Clarity + 8D Spatial + Visualizer
   const initWebAudio = () => {
     if (audioCtxRef.current || typeof window === 'undefined') return
     const AudioCtx = window.AudioContext || window.webkitAudioContext
@@ -248,13 +334,51 @@ export function MusicPlayerProvider({ children }) {
       compressor.attack.value = 0.005
       compressor.release.value = 0.25
 
+      // 5. 8D Spatial Audio Panner
+      let panner = null
+      try {
+        if (ctx.createStereoPanner) {
+          panner = ctx.createStereoPanner()
+          panner.pan.value = 0
+        } else if (ctx.createPanner) {
+          panner = ctx.createPanner()
+          panner.panningModel = 'HRTF'
+          if (panner.positionX) {
+            panner.positionX.value = 0
+            panner.positionY.value = 0
+            panner.positionZ.value = 1
+          }
+        }
+      } catch (pErr) {
+        console.warn('Panner creation error:', pErr)
+      }
+      pannerRef.current = panner
+
+      // 6. Real-time Visualizer Analyser Node
+      const analyser = ctx.createAnalyser()
+      analyser.fftSize = 256
+      analyser.smoothingTimeConstant = 0.82
+      analyserRef.current = analyser
+      setAnalyserNode(analyser)
+
+      // Connect Chain: source -> bass -> vocal -> high -> compressor -> (panner) -> analyser -> destination
       source.connect(bass)
       bass.connect(vocal)
       vocal.connect(high)
       high.connect(compressor)
-      compressor.connect(ctx.destination)
 
+      if (panner) {
+        compressor.connect(panner)
+        panner.connect(analyser)
+      } else {
+        compressor.connect(analyser)
+      }
+
+      analyser.connect(ctx.destination)
       audioCtxRef.current = ctx
+
+      // Apply initial sound effect mode if set
+      applySoundEffectMode(soundEffectMode)
     } catch (e) {
       console.warn('Web Audio initialization fallback:', e)
     }
@@ -265,9 +389,11 @@ export function MusicPlayerProvider({ children }) {
       const next = !prev
       try {
         localStorage.setItem(PURE_SOUND_KEY, JSON.stringify(next))
-        if (bassFilterRef.current) bassFilterRef.current.gain.value = next ? 1.2 : 0
-        if (vocalFilterRef.current) vocalFilterRef.current.gain.value = next ? 1.6 : 0
-        if (highShelfRef.current) highShelfRef.current.gain.value = next ? -1.8 : 0
+        if (soundEffectMode === 'normal') {
+          if (bassFilterRef.current) bassFilterRef.current.gain.value = next ? 1.2 : 0
+          if (vocalFilterRef.current) vocalFilterRef.current.gain.value = next ? 1.6 : 0
+          if (highShelfRef.current) highShelfRef.current.gain.value = next ? -1.8 : 0
+        }
       } catch (e) {
         console.warn(e)
       }
@@ -515,6 +641,7 @@ export function MusicPlayerProvider({ children }) {
               audio.volume = targetVolume
             }
           }, 35)
+          applySoundEffectMode(soundEffectMode)
         }
       }, 25)
     } else {
@@ -535,6 +662,7 @@ export function MusicPlayerProvider({ children }) {
           audio.volume = targetVolume
         }
       }, 30)
+      applySoundEffectMode(soundEffectMode)
     }
   }
 
@@ -711,6 +839,20 @@ export function MusicPlayerProvider({ children }) {
     }
   }
 
+  const seekRelative = (seconds) => {
+    const audio = audioRef.current
+    if (!audio) return
+    const cur = audio.currentTime || 0
+    const dur = (duration && isFinite(duration)) ? duration : 99999
+    const target = Math.max(0, Math.min(cur + seconds, dur))
+    try {
+      audio.currentTime = target
+      setCurrentTime(target)
+    } catch (e) {
+      console.warn('seekRelative error:', e)
+    }
+  }
+
   const changeVolume = (newVol) => {
     const clamped = Math.max(0, Math.min(1, newVol))
     setVolume(clamped)
@@ -823,6 +965,7 @@ export function MusicPlayerProvider({ children }) {
     nextTrack: () => handleSmartNext(false),
     prevTrack: handlePrev,
     seekTo,
+    seekRelative,
     changeVolume,
     toggleMute,
     toggleLike,
@@ -831,7 +974,10 @@ export function MusicPlayerProvider({ children }) {
     toggleRepeat,
     setQueue,
     pureSoundMode,
-    togglePureSoundMode
+    togglePureSoundMode,
+    soundEffectMode,
+    setSoundEffectMode,
+    analyserNode
   }
 
 
