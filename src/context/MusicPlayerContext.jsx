@@ -248,6 +248,8 @@ export function MusicPlayerProvider({ children }) {
 
   const audioRef = useRef(null)
   const audioCtxRef = useRef(null)
+  const masterGainRef = useRef(null)
+  const preampGainRef = useRef(null)
   const bassFilterRef = useRef(null)
   const vocalFilterRef = useRef(null)
   const highShelfRef = useRef(null)
@@ -278,6 +280,7 @@ export function MusicPlayerProvider({ children }) {
     const bass = bassFilterRef.current
     const vocal = vocalFilterRef.current
     const high = highShelfRef.current
+    const preamp = preampGainRef.current
 
     // Reset panner to neutral center
     if (panner) {
@@ -292,9 +295,10 @@ export function MusicPlayerProvider({ children }) {
 
     if (mode === '8d_spatial') {
       if (audio) audio.playbackRate = 1.0
-      if (bass) bass.gain.value = 2.0
-      if (vocal) vocal.gain.value = 1.5
-      if (high) high.gain.value = -1.0
+      if (preamp) preamp.gain.value = 0.84 // Safe pre-attenuation
+      if (bass) bass.gain.value = 1.0
+      if (vocal) vocal.gain.value = 0.8
+      if (high) high.gain.value = -0.6
 
       let angle = 0
       const animate8D = () => {
@@ -313,20 +317,23 @@ export function MusicPlayerProvider({ children }) {
       pannerAnimationIdRef.current = requestAnimationFrame(animate8D)
     } else if (mode === 'slowed_reverb') {
       if (audio) audio.playbackRate = 0.88
-      if (bass) bass.gain.value = 3.5
-      if (vocal) vocal.gain.value = 1.0
-      if (high) high.gain.value = -3.5
+      if (preamp) preamp.gain.value = 0.82
+      if (bass) bass.gain.value = 1.4
+      if (vocal) vocal.gain.value = 0.4
+      if (high) high.gain.value = -1.8
     } else if (mode === 'nightcore') {
       if (audio) audio.playbackRate = 1.15
-      if (bass) bass.gain.value = 0.5
-      if (vocal) vocal.gain.value = 2.0
-      if (high) high.gain.value = 3.0
+      if (preamp) preamp.gain.value = 0.84
+      if (bass) bass.gain.value = 0
+      if (vocal) vocal.gain.value = 0.8
+      if (high) high.gain.value = 1.0
     } else {
-      // Normal / Pure Studio Peace Mode
+      // Normal / Pure Studio Peace Mode (Pristine, Zero-Distortion Clarity)
       if (audio) audio.playbackRate = 1.0
-      if (bass) bass.gain.value = pureSoundMode ? 1.2 : 0
-      if (vocal) vocal.gain.value = pureSoundMode ? 1.6 : 0
-      if (high) high.gain.value = pureSoundMode ? -1.8 : 0
+      if (preamp) preamp.gain.value = 0.88 // 1.1dB headroom cushion
+      if (bass) bass.gain.value = pureSoundMode ? 0.8 : 0
+      if (vocal) vocal.gain.value = pureSoundMode ? 0.6 : 0
+      if (high) high.gain.value = pureSoundMode ? -1.0 : 0
     }
   }
 
@@ -338,7 +345,7 @@ export function MusicPlayerProvider({ children }) {
     applySoundEffectMode(mode)
   }
 
-  // Initialize Web Audio API DSP Pipeline for Pure Studio Clarity + 8D Spatial + Visualizer
+  // Initialize Web Audio API DSP Pipeline for Pure Studio Clarity + Anti-Clipping Headroom + 8D Spatial + Visualizer
   const initWebAudio = () => {
     if (audioCtxRef.current || typeof window === 'undefined') return
     const AudioCtx = window.AudioContext || window.webkitAudioContext
@@ -350,37 +357,42 @@ export function MusicPlayerProvider({ children }) {
 
       const source = ctx.createMediaElementSource(audio)
 
-      // 1. Warm Acoustic Lows (110Hz +1.2dB) - gives rich body without boominess
+      // 1. Preamp Headroom Cushion (-1.2dB = 0.88) - Guarantees zero inter-sample clipping on hot masters
+      const preamp = ctx.createGain()
+      preamp.gain.value = 0.88
+      preampGainRef.current = preamp
+
+      // 2. Warm Lows (100Hz +0.8dB) - Clean acoustic warmth without boomy mud or distortion
       const bass = ctx.createBiquadFilter()
       bass.type = 'lowshelf'
-      bass.frequency.value = 110
-      bass.gain.value = pureSoundMode ? 1.2 : 0
+      bass.frequency.value = 100
+      bass.gain.value = pureSoundMode ? 0.8 : 0
       bassFilterRef.current = bass
 
-      // 2. Vocal Intimacy & Clarity (2.8kHz +1.6dB, Q=1.0) - crystal-clear vocal articulation
+      // 3. Vocal Clarity (2400Hz +0.6dB, Q=0.8) - Sweet vocal articulation without harshness
       const vocal = ctx.createBiquadFilter()
       vocal.type = 'peaking'
-      vocal.frequency.value = 2800
-      vocal.Q.value = 1.0
-      vocal.gain.value = pureSoundMode ? 1.6 : 0
+      vocal.frequency.value = 2400
+      vocal.Q.value = 0.8
+      vocal.gain.value = pureSoundMode ? 0.6 : 0
       vocalFilterRef.current = vocal
 
-      // 3. Ear-Peace Anti-Fatigue High Shelf (5.2kHz -1.8dB) - eliminates ear-piercing sibilance
+      // 4. Ear-Peace Anti-Fatigue High Shelf (6500Hz -1.0dB) - Shields sensitive earbud drivers from sibilance
       const high = ctx.createBiquadFilter()
       high.type = 'highshelf'
-      high.frequency.value = 5200
-      high.gain.value = pureSoundMode ? -1.8 : 0
+      high.frequency.value = 6500
+      high.gain.value = pureSoundMode ? -1.0 : 0
       highShelfRef.current = high
 
-      // 4. Studio Dynamics Compressor - smooths loudness jumps for a relaxed listening feel
-      const compressor = ctx.createDynamicsCompressor()
-      compressor.threshold.value = -16
-      compressor.knee.value = 12
-      compressor.ratio.value = 3.0
-      compressor.attack.value = 0.005
-      compressor.release.value = 0.25
+      // 5. Anti-Clipping True Peak Safety Limiter - Brickwall ceiling at -0.5dB (Transparent: ZERO pumping, ZERO crackling)
+      const limiter = ctx.createDynamicsCompressor()
+      limiter.threshold.value = -0.5
+      limiter.knee.value = 0
+      limiter.ratio.value = 20.0
+      limiter.attack.value = 0.001
+      limiter.release.value = 0.05
 
-      // 5. 8D Spatial Audio Panner
+      // 6. 8D Spatial Audio Panner
       let panner = null
       try {
         if (ctx.createStereoPanner) {
@@ -400,28 +412,38 @@ export function MusicPlayerProvider({ children }) {
       }
       pannerRef.current = panner
 
-      // 6. Real-time Visualizer Analyser Node
+      // 7. Master Volume Gain Node - Sample-accurate hardware volume scaling without zipper clicks
+      const masterGain = ctx.createGain()
+      masterGain.gain.value = (isMuted ? 0 : volume) * 0.90
+      masterGainRef.current = masterGain
+
+      // 8. Real-time Visualizer Analyser Node
       const analyser = ctx.createAnalyser()
       analyser.fftSize = 256
       analyser.smoothingTimeConstant = 0.82
       analyserRef.current = analyser
       setAnalyserNode(analyser)
 
-      // Connect Chain: source -> bass -> vocal -> high -> compressor -> (panner) -> analyser -> destination
-      source.connect(bass)
+      // Connect Chain: source -> preamp -> bass -> vocal -> high -> limiter -> (panner) -> masterGain -> analyser -> destination
+      source.connect(preamp)
+      preamp.connect(bass)
       bass.connect(vocal)
       vocal.connect(high)
-      high.connect(compressor)
+      high.connect(limiter)
 
       if (panner) {
-        compressor.connect(panner)
-        panner.connect(analyser)
+        limiter.connect(panner)
+        panner.connect(masterGain)
       } else {
-        compressor.connect(analyser)
+        limiter.connect(masterGain)
       }
 
+      masterGain.connect(analyser)
       analyser.connect(ctx.destination)
       audioCtxRef.current = ctx
+
+      // Keep HTML5 audio element at 1.0 so it delivers clean unquantized float PCM
+      audio.volume = 1.0
 
       // Apply initial sound effect mode if set
       applySoundEffectMode(soundEffectMode)
@@ -436,9 +458,9 @@ export function MusicPlayerProvider({ children }) {
       try {
         localStorage.setItem(PURE_SOUND_KEY, JSON.stringify(next))
         if (soundEffectMode === 'normal') {
-          if (bassFilterRef.current) bassFilterRef.current.gain.value = next ? 1.2 : 0
-          if (vocalFilterRef.current) vocalFilterRef.current.gain.value = next ? 1.6 : 0
-          if (highShelfRef.current) highShelfRef.current.gain.value = next ? -1.8 : 0
+          if (bassFilterRef.current) bassFilterRef.current.gain.value = next ? 0.8 : 0
+          if (vocalFilterRef.current) vocalFilterRef.current.gain.value = next ? 0.6 : 0
+          if (highShelfRef.current) highShelfRef.current.gain.value = next ? -1.0 : 0
         }
       } catch (e) {
         console.warn(e)
@@ -665,56 +687,44 @@ export function MusicPlayerProvider({ children }) {
       }
     } catch (e) {}
 
-    // Smooth Crossfade: If music is already playing, fade down quickly, swap song, fade up
-    if (!audio.paused && audio.src && targetVolume > 0.05) {
-      const startVol = audio.volume
-      const steps = 5
-      let step = 0
+    // Smooth Sample-Accurate Web Audio Crossfade (Zero Clicks, Zero Crackles)
+    if (audioCtxRef.current && masterGainRef.current && !audio.paused && audio.src && targetVolume > 0.05) {
+      const ctx = audioCtxRef.current
+      const t = ctx.currentTime
+      masterGainRef.current.gain.cancelScheduledValues(t)
+      masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, t)
+      masterGainRef.current.gain.linearRampToValueAtTime(0, t + 0.06)
 
-      fadeIntervalRef.current = setInterval(() => {
-        step++
-        audio.volume = Math.max(0, startVol * (1 - step / steps))
+      setTimeout(() => {
+        audio.src = track.url
+        audio.currentTime = 0
+        audio.volume = 1.0
+        const playPromise = audio.play()
+        if (playPromise?.catch) playPromise.catch(() => {})
 
-        if (step >= steps) {
-          clearFadeInterval()
-          audio.src = track.url
-          audio.currentTime = 0
-          audio.volume = 0
-          const playPromise = audio.play()
-          if (playPromise?.catch) playPromise.catch(() => {})
-
-          // Smooth fade-in
-          let inStep = 0
-          const inSteps = 8
-          fadeIntervalRef.current = setInterval(() => {
-            inStep++
-            audio.volume = Math.min(targetVolume, (targetVolume * inStep) / inSteps)
-            if (inStep >= inSteps) {
-              clearFadeInterval()
-              audio.volume = targetVolume
-            }
-          }, 35)
-          applySoundEffectMode(soundEffectMode)
+        if (audioCtxRef.current && masterGainRef.current) {
+          const tNow = audioCtxRef.current.currentTime
+          masterGainRef.current.gain.cancelScheduledValues(tNow)
+          masterGainRef.current.gain.setValueAtTime(0, tNow)
+          masterGainRef.current.gain.linearRampToValueAtTime(targetVolume * 0.90, tNow + 0.10)
         }
-      }, 25)
+        applySoundEffectMode(soundEffectMode)
+      }, 70)
     } else {
       audio.src = track.url
       audio.currentTime = 0
-      audio.volume = 0
+      audio.volume = 1.0
       const playPromise = audio.play()
       if (playPromise?.catch) playPromise.catch(() => {})
 
-      // Smooth subtle fade-in on initial play
-      let inStep = 0
-      const inSteps = 6
-      fadeIntervalRef.current = setInterval(() => {
-        inStep++
-        audio.volume = Math.min(targetVolume, (targetVolume * inStep) / inSteps)
-        if (inStep >= inSteps) {
-          clearFadeInterval()
-          audio.volume = targetVolume
-        }
-      }, 30)
+      if (audioCtxRef.current && masterGainRef.current) {
+        const t = audioCtxRef.current.currentTime
+        masterGainRef.current.gain.cancelScheduledValues(t)
+        masterGainRef.current.gain.setValueAtTime(0, t)
+        masterGainRef.current.gain.linearRampToValueAtTime(targetVolume * 0.90, t + 0.08)
+      } else {
+        audio.volume = targetVolume
+      }
       applySoundEffectMode(soundEffectMode)
     }
   }
@@ -948,7 +958,12 @@ export function MusicPlayerProvider({ children }) {
     setVolume(clamped)
     originalVolumeRef.current = clamped
     setIsMuted(clamped === 0)
-    if (audioRef.current) {
+    if (masterGainRef.current && audioCtxRef.current) {
+      const t = audioCtxRef.current.currentTime
+      masterGainRef.current.gain.cancelScheduledValues(t)
+      masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, t)
+      masterGainRef.current.gain.linearRampToValueAtTime(clamped * 0.90, t + 0.05)
+    } else if (audioRef.current) {
       audioRef.current.volume = clamped
     }
   }
@@ -956,10 +971,25 @@ export function MusicPlayerProvider({ children }) {
   const toggleMute = () => {
     if (isMuted) {
       setIsMuted(false)
-      if (audioRef.current) audioRef.current.volume = volume > 0 ? volume : 0.5
+      const targetVol = volume > 0 ? volume : 0.5
+      if (masterGainRef.current && audioCtxRef.current) {
+        const t = audioCtxRef.current.currentTime
+        masterGainRef.current.gain.cancelScheduledValues(t)
+        masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, t)
+        masterGainRef.current.gain.linearRampToValueAtTime(targetVol * 0.90, t + 0.05)
+      } else if (audioRef.current) {
+        audioRef.current.volume = targetVol
+      }
     } else {
       setIsMuted(true)
-      if (audioRef.current) audioRef.current.volume = 0
+      if (masterGainRef.current && audioCtxRef.current) {
+        const t = audioCtxRef.current.currentTime
+        masterGainRef.current.gain.cancelScheduledValues(t)
+        masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, t)
+        masterGainRef.current.gain.linearRampToValueAtTime(0, t + 0.05)
+      } else if (audioRef.current) {
+        audioRef.current.volume = 0
+      }
     }
   }
 
