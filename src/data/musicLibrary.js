@@ -455,15 +455,15 @@ Faasle hain yeh kaisa imtihaan!`
   },
   {
     id: "my_bolve",
-    title: "Bol Ve (Kadi Te Has Bol Ve)",
-    artist: "Amjad Ali",
-    album: "Kadi Te Has Bol Ve",
-    genre: "Pop / Indie",
-    theme: "reels_viral",
-    image: "https://c.saavncdn.com/026/Kadi-Te-Has-Bol-Ve-Punjabi-2025-20250527115216-500x500.jpg",
-    url: "https://aac.saavncdn.com/026/a446c4878291ef950a978abfc50085b5_320.mp4",
-    duration: "2:52",
-    lyrics: "Kadi Te Has Bol Ve by Amjad Ali"
+    title: "Bolve",
+    artist: "Madan Maddi & Sukshinder Shinda",
+    album: "Moving & Grooving",
+    genre: "Punjabi Bhangra",
+    theme: "punjabi",
+    image: "https://is1-ssl.mzstatic.com/image/thumb/Music/fc/9f/46/mzi.wkdfpphx.tif/600x600bb.jpg",
+    url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/88/34/7d/88347da9-c940-1b2a-1467-c5c05fd3c786/mzaf_11013022392691564059.plus.aac.p.m4a",
+    duration: "5:12",
+    lyrics: "Bolve by Madan Maddi & Sukshinder Shinda"
   },
   {
     id: "my_imposter_syndrome",
