@@ -182,3 +182,17 @@ input[type="range"]:hover::-webkit-slider-thumb {
   transform: scale(1.3);
   background: #1ed760;
 }
+
+/* Responsive visibility utilities */
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
