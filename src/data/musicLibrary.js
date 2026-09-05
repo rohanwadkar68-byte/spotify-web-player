@@ -853,97 +853,67 @@ Faasle hain yeh kaisa imtihaan!`
 
 export const SPOTIFY_PLAYLISTS = [
   {
-    id: 'my_playlist',
-    title: '✨ My Playlist',
-    description: 'Handpicked viral hits, indie anthems, aesthetic slowed & reverb, and soulful favorites.',
-    cover: 'https://c.saavncdn.com/978/Die-With-A-Smile-English-2024-20240816053358-500x500.jpg',
-    gradient: 'linear-gradient(135deg, #8a2387, #e94057, #f27121)',
-    emoji: '✨',
-    songIds: [
-      "my_life_goes_on",
-      "my_taare",
-      "my_im_sorry_mom",
-      "my_koodappirannor",
-      "my_i_thought_i_saw_your_face_today",
-      "my_barsat",
-      "my_banjara",
-      "my_ishq_se_faniyar_female",
-      "my_bolve",
-      "my_imposter_syndrome",
-      "my_aarzu",
-      "my_jhoom_rnb",
-      "my_ambarsariya",
-      "my_love_me_not",
-      "my_mann_mera",
-      "my_paro",
-      "my_pal_pal",
-      "my_finding_her",
-      "my_aadmi_chutiya_hai",
-      "my_chidiya_vilen",
-      "my_die_with_a_smile",
-      "my_mitwa",
-      "my_line_without_a_hook",
-      "my_aasa_kooda",
-      "my_mockingbird",
-      "my_timro_pratiksha",
-      "my_heat_waves",
-      "my_sweater_weather",
-      "my_novocaine_slowed",
-      "my_me_gustas_tu",
-      "my_kings_and_queens",
-      "my_your_eyes",
-      "my_mood_24kgoldn",
-      "my_blue_yung_kai",
-      "my_three_fifteen",
-      "my_losing_interest",
-      "my_snap",
-      "my_summertime_sadness",
-      "my_dancin_krono",
-      "my_play_date",
-      "my_death_bed"
-]
-  },
-  {
-    id: 'insta_viral_reels',
-    title: '🔥 Instagram Reels Hits',
-    description: 'Trending tracks dominating your Instagram explore feed right now.',
-    cover: 'https://c.saavncdn.com/252/Laapataa-Ladies-Hindi-2024-20240213155601-500x500.jpg',
-    songIds: ['sajni', 'o_maahi', 'pehle_bhi_main', 'kesariya', 'apna_bana_le']
-  },
-  {
-    id: 'insta_sad_reels',
-    title: '🌙 2 AM Broken Heart Reels',
-    description: 'Deep emotional ballads and melancholic indie masterpieces for late nights.',
-    cover: 'https://c.saavncdn.com/111/Aalas-Ka-Pedh-Hindi-2015-500x500.jpg',
-    songIds: ['choo_lo', 'husn', 'kahani_suno', 'tu_hai_kahan', 'faasle', 'baarishein']
-  },
-  {
-    id: 'top_hits',
-    title: "Today's Top Hits",
-    description: 'The biggest and most popular tracks right now.',
+    id: 'top_50_india',
+    title: '🏆 Top 50 - India Hits',
+    description: 'The hottest and most played tracks across India right now.',
     cover: 'https://c.saavncdn.com/871/Brahmastra-Original-Motion-Picture-Soundtrack-Hindi-2022-20221006155213-500x500.jpg',
-    songIds: ['sajni', 'kesariya', 'o_maahi', 'pehle_bhi_main', 'tu_hai_kahan']
+    gradient: 'linear-gradient(135deg, #10b981, #059669)',
+    emoji: '🏆',
+    songIds: ['sajni', 'kesariya', 'apna_bana_le', 'o_maahi', 'pehle_bhi_main', 'my_die_with_a_smile', 'my_blue_yung_kai', 'tu_hai_kahan']
   },
   {
-    id: 'romantic',
-    title: 'Romantic Melodies',
-    description: 'Timeless romantic hits and heartfelt vocals.',
+    id: 'viral_hits_2026',
+    title: '🔥 Viral Hits 2026',
+    description: 'Trending tracks dominating explore feeds, reels, and global charts.',
+    cover: 'https://c.saavncdn.com/252/Laapataa-Ladies-Hindi-2024-20240213155601-500x500.jpg',
+    gradient: 'linear-gradient(135deg, #e1306c, #f77737)',
+    emoji: '🔥',
+    songIds: ['sajni', 'my_heat_waves', 'my_snap', 'my_dancin_krono', 'my_play_date', 'my_mood_24kgoldn', 'my_summertime_sadness', 'o_maahi']
+  },
+  {
+    id: 'late_night_vibes',
+    title: '🌙 Late Night & 2 AM Vibes',
+    description: 'Deep emotional ballads, mellow indie masterpieces, and midnight chill.',
+    cover: 'https://c.saavncdn.com/111/Aalas-Ka-Pedh-Hindi-2015-500x500.jpg',
+    gradient: 'linear-gradient(135deg, #2563eb, #1e1b4b)',
+    emoji: '🌙',
+    songIds: ['choo_lo', 'husn', 'kahani_suno', 'tu_hai_kahan', 'faasle', 'baarishein', 'my_novocaine_slowed', 'my_sweater_weather', 'my_three_fifteen', 'my_losing_interest']
+  },
+  {
+    id: 'bollywood_romance',
+    title: '💖 Bollywood Romance & Soul',
+    description: 'Timeless romantic hits, soulful melodies, and acoustic love anthems.',
     cover: 'https://c.saavncdn.com/238/Romantic-Classics-Hits-Hindi-2026-20260529163838-500x500.jpg',
-    songIds: ['kesariya', 'apna_bana_le', 'sajni', 'o_maahi', 'shayad', 'raataan_lambiyan', 'pehla_nasha']
+    gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
+    emoji: '💖',
+    songIds: ['kesariya', 'apna_bana_le', 'sajni', 'o_maahi', 'shayad', 'raataan_lambiyan', 'pehla_nasha', 'my_mann_mera', 'my_mitwa', 'my_paro']
   },
   {
-    id: 'acoustic_indie',
-    title: 'Acoustic & Indie',
-    description: 'Stripped-down acoustic strings and raw emotion.',
-    cover: 'https://c.saavncdn.com/436/Husn-Hindi-2023-20231129054140-500x500.jpg',
-    songIds: ['husn', 'choo_lo', 'faasle', 'baarishein', 'tu_hai_kahan']
+    id: 'punjabi_wave',
+    title: '⚡ Punjabi Top 50',
+    description: 'Electrifying Punjabi bangers, modern beats, and chart-topping swagger.',
+    cover: 'https://c.saavncdn.com/228/Lover-English-2019-20250731010741-500x500.jpg',
+    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    emoji: '⚡',
+    songIds: ['my_bolve', 'my_banjara', 'my_taare', 'my_aasa_kooda', 'my_kings_and_queens']
   },
   {
     id: 'chill_lofi',
-    title: 'Lo-Fi & Chill',
-    description: 'Peaceful beats for relaxing and unwinding.',
+    title: '☕ Study & Chill Lo-Fi Beats',
+    description: 'Peaceful aesthetic beats for focus, relaxing, and nighttime peace.',
     cover: 'https://c.saavncdn.com/054/Music-To-Put-You-In-A-Better-Mood-Lofi-Hip-Hop-Beats-to-Sleep-Chill-To-Unknown-2023-20250508183531-500x500.jpg',
-    songIds: ['study_lofi', 'until_i_found_you', 'baarishein']
+    gradient: 'linear-gradient(135deg, #0d9488, #115e59)',
+    emoji: '☕',
+    songIds: ['study_lofi', 'my_death_bed', 'my_play_date', 'until_i_found_you', 'baarishein', 'my_blue_yung_kai']
+  },
+  {
+    id: 'dance_party',
+    title: '💃 Dance & Party Floor',
+    description: 'High energy dance anthems, electro rhythms, and unstoppable party vibes.',
+    cover: 'https://c.saavncdn.com/454/Dancin-English-2014-20260228225235-500x500.jpg',
+    gradient: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+    emoji: '💃',
+    songIds: ['my_dancin_krono', 'my_me_gustas_tu', 'my_mockingbird', 'my_kings_and_queens', 'my_line_without_a_hook']
   }
 ]
 

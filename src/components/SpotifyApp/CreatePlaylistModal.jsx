@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useMusicPlayer } from '../../context/MusicPlayerContext.jsx'
 
 const COVER_GRADIENTS = [
-  { gradient: 'linear-gradient(135deg, #ff0844, #ffb199)', emoji: '🎂' },
+  { gradient: 'linear-gradient(135deg, #ff0844, #ffb199)', emoji: '🎧' },
   { gradient: 'linear-gradient(135deg, #1ed760, #1db954)', emoji: '🎵' },
   { gradient: 'linear-gradient(135deg, #7928ca, #ff0080)', emoji: '✨' },
   { gradient: 'linear-gradient(135deg, #f12711, #f5af19)', emoji: '🔥' },
@@ -115,7 +115,7 @@ export default function CreatePlaylistModal({ isOpen, onClose, onCreated }) {
               <input
                 type="text"
                 autoFocus
-                placeholder="Playlist name (e.g. Sneha's Jam)"
+                placeholder="Playlist name (e.g. Late Night Vibes)"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={{

@@ -15,7 +15,7 @@ import AddToPlaylistModal from './AddToPlaylistModal.jsx'
 import SpotifyFullPlayerModal from './SpotifyFullPlayerModal.jsx'
 import { SPOTIFY_PLAYLISTS, DEFAULT_ALBUM_COVER } from '../../data/musicLibrary.js'
 
-export default function SpotifyApp({ onBackToWorld }) {
+export default function SpotifyApp() {
   const [activeView, setActiveView] = useState('home') // home | playlists | trends | search | playlist | library | lyrics
   const [activePlaylist, setActivePlaylist] = useState({ id: 'liked', title: 'Liked Songs' })
   const [searchQuery, setSearchQuery] = useState('')
@@ -24,13 +24,63 @@ export default function SpotifyApp({ onBackToWorld }) {
   const [addToPlaylistSong, setAddToPlaylistSong] = useState(null)
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768)
 
-  const { ambientColor, customPlaylists, likedIds } = useMusicPlayer()
+  const {
+    currentTrack,
+    isPlaying,
+    togglePlay,
+    seekRelative,
+    changeVolume,
+    volume,
+    toggleMute,
+    toggleLike,
+    ambientColor,
+    customPlaylists,
+    likedIds
+  } = useMusicPlayer()
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  // Global Keyboard Shortcuts (Space: Play/Pause, Arrows: Seek/Vol, M: Mute, L: Like)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const tag = e.target.tagName?.toLowerCase()
+      if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) {
+        return
+      }
+
+      if (e.code === 'Space') {
+        e.preventDefault()
+        togglePlay()
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault()
+        seekRelative(-5)
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault()
+        seekRelative(5)
+      } else if (e.code === 'ArrowUp') {
+        e.preventDefault()
+        changeVolume(Math.min(1, (volume || 0.85) + 0.05))
+      } else if (e.code === 'ArrowDown') {
+        e.preventDefault()
+        changeVolume(Math.max(0, (volume || 0.85) - 0.05))
+      } else if (e.code === 'KeyM') {
+        e.preventDefault()
+        toggleMute()
+      } else if (e.code === 'KeyL') {
+        if (currentTrack) {
+          e.preventDefault()
+          toggleLike(currentTrack.id)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [togglePlay, seekRelative, changeVolume, volume, toggleMute, toggleLike, currentTrack])
 
   const handleSelectPlaylist = (pl) => {
     setActivePlaylist(pl)
@@ -76,7 +126,6 @@ export default function SpotifyApp({ onBackToWorld }) {
       <FloatingIslandNav
         activeView={activeView}
         setActiveView={setActiveView}
-        onBackToWorld={onBackToWorld}
         onOpenFullPlayer={() => setIsFullPlayerOpen(true)}
         onOpenLikedPlaylist={() => handleSelectPlaylist({ id: 'liked', title: 'Liked Songs' })}
       />

@@ -2,8 +2,7 @@ export default function SpotifyTopBar({
   activeView,
   setActiveView,
   searchQuery,
-  setSearchQuery,
-  onBackToWorld
+  setSearchQuery
 }) {
   return (
     <header style={{
@@ -97,32 +96,8 @@ export default function SpotifyTopBar({
         )}
       </div>
 
-      {/* RIGHT: Return to World Button */}
+      {/* RIGHT: User Profile Icon */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        {onBackToWorld && (
-          <button
-            onClick={onBackToWorld}
-            style={{
-              border: '1px solid rgba(255,255,255,0.2)',
-              background: 'rgba(255,255,255,0.08)',
-              color: '#ffffff',
-              padding: '6px 12px',
-              borderRadius: 9999,
-              fontSize: '12px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              whiteSpace: 'nowrap'
-            }}
-            title="Return to Previous World"
-          >
-            <span>←</span>
-            <span>Back to World</span>
-          </button>
-        )}
-
         <div style={{
           width: 28,
           height: 28,
@@ -132,11 +107,11 @@ export default function SpotifyTopBar({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#ffffff',
-          fontWeight: 700,
-          fontSize: '12px'
+          color: '#ffffff'
         }}>
-          S
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
         </div>
       </div>
     </header>

@@ -115,7 +115,7 @@ export default function SoundstageHero({ onOpenFullPlayer }) {
                 boxShadow: `0 0 16px ${ambientColor}30`
               }}
             >
-              SPOTLIGHT • {mood.toUpperCase().replace('_', ' ')}
+              {currentTrack ? `NOW PLAYING • ${mood.toUpperCase().replace('_', ' ')}` : 'TRENDING SPOTLIGHT • CLICK TO PLAY'}
             </span>
             {isPlaying && (
               <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '10px', color: '#1ed760', fontWeight: 800 }}>

@@ -45,7 +45,101 @@ export default function FloatingDockPlayer({ onOpenFullPlayer }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  if (!currentTrack) return null
+  if (!currentTrack) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          bottom: isMobile ? 12 : 20,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          display: 'flex',
+          justifyContent: 'center',
+          padding: isMobile ? '0 10px' : '0 20px',
+          pointerEvents: 'none'
+        }}
+      >
+        <motion.div
+          role="region"
+          aria-label="Music Player Idle"
+          data-testid="floating-dock-player"
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="glass-capsule"
+          style={{
+            pointerEvents: 'auto',
+            width: '100%',
+            maxWidth: isMobile ? 480 : 720,
+            borderRadius: isMobile ? 18 : 22,
+            padding: isMobile ? '8px 14px' : '10px 22px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            background: 'rgba(18, 18, 24, 0.88)',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 16px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(30, 215, 96, 0.15)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+            <div
+              style={{
+                width: isMobile ? 36 : 42,
+                height: isMobile ? 36 : 42,
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #1db954, #10b981)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 4px 14px rgba(30, 215, 96, 0.35)'
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#000000">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+              </svg>
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ color: '#ffffff', fontSize: isMobile ? '13px' : '14px', fontWeight: 800, letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                Sensei Music
+              </div>
+              <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: isMobile ? '11px' : '12px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                Select any track or playlist to start listening
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => togglePlay()}
+            style={{
+              padding: isMobile ? '7px 16px' : '8px 20px',
+              borderRadius: 999,
+              background: '#1ed760',
+              color: '#000000',
+              fontWeight: 800,
+              fontSize: isMobile ? '12px' : '13px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              flexShrink: 0,
+              boxShadow: '0 4px 14px rgba(30, 215, 96, 0.4)',
+              transition: 'transform 0.15s ease'
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <span>Play</span>
+          </button>
+        </motion.div>
+      </div>
+    )
+  }
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
   const liked = isLiked(currentTrack.id)

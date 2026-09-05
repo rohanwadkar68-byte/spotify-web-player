@@ -15,10 +15,10 @@ const BROWSE_GENRES = [
   { id: 'bollywood', name: 'Bollywood 💫', color: '#e8115b', query: 'Arijit Singh' },
   { id: 'indie', name: 'Indie & Acoustic 🎸', color: '#8d67ab', query: 'Anuv Jain' },
   { id: 'lofi', name: 'Lo-Fi & Chill 🌙', color: '#148a08', query: 'Lofi Chill' },
-  { id: 'vilen', name: 'Teddy\'s Vilen 🧸', color: '#006450', query: 'Vilen' },
+  { id: 'indie_trending', name: 'Trending Indie 🎶', color: '#006450', query: 'Vilen Chidiya' },
   { id: 'pop', name: 'Pop Hits ✨', color: '#503750', query: 'Taylor Swift' },
   { id: 'punjabi', name: 'Punjabi Beats 🔥', color: '#bc5900', query: 'AP Dhillon' },
-  { id: 'party', name: 'Celebration 🎂', color: '#e91429', query: 'Birthday Celebration' }
+  { id: 'party', name: 'Party & Dance 💃', color: '#e91429', query: 'Bollywood Party Dance' }
 ]
 
 export default function SpotifySearchView({ searchQuery, setSearchQuery }) {

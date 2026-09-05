@@ -11,7 +11,7 @@ function getGreeting() {
   return 'Good evening'
 }
 
-const LIVE_TRENDS_STORAGE_KEY = 'sneha_spotify_live_trends_v2'
+const LIVE_TRENDS_STORAGE_KEY = 'sensei_music_live_trends_v2'
 
 const MOOD_PILLS = [
   { id: 'all', label: 'All', icon: '✨' },

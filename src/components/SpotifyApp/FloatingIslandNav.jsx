@@ -7,7 +7,6 @@ import { DEFAULT_ALBUM_COVER } from '../../data/musicLibrary.js'
 export default function FloatingIslandNav({
   activeView,
   setActiveView,
-  onBackToWorld,
   onOpenFullPlayer,
   onOpenLikedPlaylist
 }) {
@@ -80,7 +79,7 @@ export default function FloatingIslandNav({
               </svg>
             </div>
             <span style={{ fontSize: '13px', fontWeight: 900, letterSpacing: '0.02em', color: '#ffffff' }}>
-              SPOTIFY
+              SENSEI MUSIC
             </span>
           </div>
 
@@ -161,25 +160,6 @@ export default function FloatingIslandNav({
                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </button>
-
-            {onBackToWorld && (
-              <button
-                type="button"
-                onClick={onBackToWorld}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: 999,
-                  background: 'rgba(30, 215, 96, 0.15)',
-                  border: '1px solid rgba(30, 215, 96, 0.4)',
-                  color: '#1ed760',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  cursor: 'pointer'
-                }}
-              >
-                ↩ World
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -242,7 +222,7 @@ export default function FloatingIslandNav({
             </svg>
           </div>
           <span style={{ fontSize: '13px', fontWeight: 800, letterSpacing: '0.04em', color: '#ffffff' }}>
-            AETHERIA
+            SENSEI MUSIC
           </span>
         </div>
 
@@ -384,29 +364,6 @@ export default function FloatingIslandNav({
               </span>
               {isPlaying && <EqualizerBars isPlaying={isPlaying} size="small" />}
             </motion.div>
-          )}
-
-          {onBackToWorld && (
-            <button
-              type="button"
-              onClick={onBackToWorld}
-              style={{
-                padding: '5px 12px',
-                borderRadius: 999,
-                background: 'rgba(30, 215, 96, 0.15)',
-                border: '1px solid rgba(30, 215, 96, 0.4)',
-                color: '#1ed760',
-                fontSize: '11px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4
-              }}
-            >
-              <span>↩</span>
-              <span>World</span>
-            </button>
           )}
         </div>
       </div>

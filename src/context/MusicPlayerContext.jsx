@@ -3,22 +3,13 @@ import { CURATED_SONGS, DEFAULT_ALBUM_COVER } from '../data/musicLibrary.js'
 
 const MusicPlayerContext = createContext(null)
 
-const LIKED_STORAGE_KEY = 'sneha_spotify_liked_v2'
-const RECENTLY_PLAYED_KEY = 'sneha_spotify_recent_v1'
-const CUSTOM_PLAYLISTS_KEY = 'sneha_spotify_custom_playlists_v1'
+const LIKED_STORAGE_KEY = 'sensei_music_liked_v1'
+const RECENTLY_PLAYED_KEY = 'sensei_music_recent_v1'
+const CUSTOM_PLAYLISTS_KEY = 'sensei_music_custom_playlists_v1'
+const PURE_SOUND_KEY = 'sensei_music_pure_sound_v1'
+const SOUND_EFFECT_KEY = 'sensei_music_sound_effect_v1'
 
-const DEFAULT_CUSTOM_PLAYLISTS = [
-  {
-    id: 'my_playlist',
-    title: '✨ My Playlist',
-    description: 'Handpicked viral hits, indie anthems, aesthetic slowed & reverb, and soulful favorites.',
-    cover: 'https://c.saavncdn.com/978/Die-With-A-Smile-English-2024-20240816053358-500x500.jpg',
-    gradient: 'linear-gradient(135deg, #8a2387, #e94057, #f27121)',
-    emoji: '✨',
-    songIds: ["my_life_goes_on","my_taare","my_im_sorry_mom","my_koodappirannor","my_i_thought_i_saw_your_face_today","my_barsat","my_banjara","my_ishq_se_faniyar_female","my_bolve","my_imposter_syndrome","my_aarzu","my_jhoom_rnb","my_ambarsariya","my_love_me_not","my_mann_mera","my_paro","my_pal_pal","my_finding_her","my_aadmi_chutiya_hai","my_chidiya_vilen","my_die_with_a_smile","my_mitwa","my_line_without_a_hook","my_aasa_kooda","my_mockingbird","my_timro_pratiksha","my_heat_waves","my_sweater_weather","my_novocaine_slowed","my_me_gustas_tu","my_kings_and_queens","my_your_eyes","my_mood_24kgoldn","my_blue_yung_kai","my_three_fifteen","my_losing_interest","my_snap","my_summertime_sadness","my_dancin_krono","my_play_date","my_death_bed"],
-    isCustom: true
-  }
-]
+const DEFAULT_CUSTOM_PLAYLISTS = []
 
 
 export function detectSongMood(track) {
@@ -157,32 +148,29 @@ function decodeHtml(html) {
 export function MusicPlayerProvider({ children }) {
   const [likedIds, setLikedIds] = useState(() => {
     try {
-      const saved = localStorage.getItem(LIKED_STORAGE_KEY)
-      return saved ? JSON.parse(saved) : ['kesariya', 'tu_hai_kahan', 'apna_bana_le']
+      const saved = localStorage.getItem(LIKED_STORAGE_KEY) || localStorage.getItem('sneha_spotify_liked_v2')
+      return saved ? JSON.parse(saved) : []
     } catch {
-      return ['kesariya', 'tu_hai_kahan', 'apna_bana_le']
+      return []
     }
   })
 
   const [recentlyPlayed, setRecentlyPlayed] = useState(() => {
     try {
-      const saved = localStorage.getItem(RECENTLY_PLAYED_KEY)
-      return saved ? JSON.parse(saved) : CURATED_SONGS.slice(0, 4)
+      const saved = localStorage.getItem(RECENTLY_PLAYED_KEY) || localStorage.getItem('sneha_spotify_recent_v1')
+      return saved ? JSON.parse(saved) : []
     } catch {
-      return CURATED_SONGS.slice(0, 4)
+      return []
     }
   })
 
   const [customPlaylists, setCustomPlaylists] = useState(() => {
     try {
-      const saved = localStorage.getItem(CUSTOM_PLAYLISTS_KEY)
+      const saved = localStorage.getItem(CUSTOM_PLAYLISTS_KEY) || localStorage.getItem('sneha_spotify_custom_playlists_v1')
       if (saved) {
         let parsed = JSON.parse(saved)
-        // Purge sneha_birthday_special from any stored session
-        parsed = parsed.filter((p) => p.id !== 'sneha_birthday_special')
-        if (!parsed.some((p) => p.id === 'my_playlist')) {
-          return [DEFAULT_CUSTOM_PLAYLISTS[0], ...parsed]
-        }
+        // Purge legacy test/personal playlists
+        parsed = parsed.filter((p) => p.id !== 'sneha_birthday_special' && p.id !== 'my_playlist')
         return parsed
       }
       return DEFAULT_CUSTOM_PLAYLISTS
@@ -201,9 +189,9 @@ export function MusicPlayerProvider({ children }) {
 
 
   const [queue, setQueue] = useState(CURATED_SONGS)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [currentTrack, setCurrentTrack] = useState(CURATED_SONGS[0])
-  const [sessionPlayedIds, setSessionPlayedIds] = useState(() => new Set([CURATED_SONGS[0]?.id || 'kesariya']))
+  const [currentIndex, setCurrentIndex] = useState(-1)
+  const [currentTrack, setCurrentTrack] = useState(null)
+  const [sessionPlayedIds, setSessionPlayedIds] = useState(() => new Set())
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -217,10 +205,9 @@ export function MusicPlayerProvider({ children }) {
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState(null)
 
   // Pure Studio Peace Audio Mode (default enabled for warmth and soft dynamics)
-  const PURE_SOUND_KEY = 'sneha_spotify_pure_sound_v1'
   const [pureSoundMode, setPureSoundMode] = useState(() => {
     try {
-      const saved = localStorage.getItem(PURE_SOUND_KEY)
+      const saved = localStorage.getItem(PURE_SOUND_KEY) || localStorage.getItem('sneha_spotify_pure_sound_v1')
       return saved !== null ? JSON.parse(saved) : true
     } catch {
       return true
@@ -228,10 +215,9 @@ export function MusicPlayerProvider({ children }) {
   })
 
   // Advanced Sound Modes: 'normal' | '8d_spatial' | 'slowed_reverb' | 'nightcore'
-  const SOUND_EFFECT_KEY = 'sneha_spotify_sound_effect_v1'
   const [soundEffectMode, setSoundEffectModeState] = useState(() => {
     try {
-      const saved = localStorage.getItem(SOUND_EFFECT_KEY)
+      const saved = localStorage.getItem(SOUND_EFFECT_KEY) || localStorage.getItem('sneha_spotify_sound_effect_v1')
       return saved || 'normal'
     } catch {
       return 'normal'
@@ -470,6 +456,7 @@ export function MusicPlayerProvider({ children }) {
     audio.preload = 'metadata'
     audio.volume = volume
     audioRef.current = audio
+    window.__audio = audio
 
     const onTimeUpdate = () => {
       const cur = audio.currentTime || 0
@@ -738,6 +725,14 @@ export function MusicPlayerProvider({ children }) {
       }
     } catch (e) {}
 
+    if (!currentTrack) {
+      const first = queue[0] || CURATED_SONGS[0]
+      if (first) {
+        playTrack(first)
+      }
+      return
+    }
+
     if (isPlaying) {
       audio.pause()
     } else {
@@ -758,6 +753,12 @@ export function MusicPlayerProvider({ children }) {
    * Auto-fetches from JioSaavn matching this exact mood when queue is running low.
    */
   const handleSmartNext = async (isAuto = false) => {
+    if (!currentTrack) {
+      const first = queue[0] || CURATED_SONGS[0]
+      if (first) playTrack(first)
+      return
+    }
+
     const currentMood = detectSongMood(currentTrack)
     const currentEra = detectSongEra(currentTrack)
     const primaryArtist = (currentTrack?.artist || '').split(',')[0].trim()
@@ -904,6 +905,11 @@ export function MusicPlayerProvider({ children }) {
 
   const handlePrev = () => {
     if (!queue || queue.length === 0) return
+    if (!currentTrack) {
+      const first = queue[0] || CURATED_SONGS[0]
+      if (first) playTrack(first)
+      return
+    }
     const audio = audioRef.current
 
     // If more than 3 seconds into the track, restart it
@@ -944,6 +950,62 @@ export function MusicPlayerProvider({ children }) {
       console.warn('seekRelative error:', e)
     }
   }
+
+  // Navigator MediaSession API for lock-screen, smartwatch, and earbud controls
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('mediaSession' in navigator)) return
+
+    if (!currentTrack) {
+      try {
+        navigator.mediaSession.playbackState = 'none'
+      } catch {}
+      return
+    }
+
+    try {
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: currentTrack.title || 'Sensei Music',
+        artist: currentTrack.artist || 'Sensei Music',
+        album: currentTrack.album || 'Sensei Music',
+        artwork: [
+          { src: currentTrack.image || DEFAULT_ALBUM_COVER, sizes: '96x96', type: 'image/jpeg' },
+          { src: currentTrack.image || DEFAULT_ALBUM_COVER, sizes: '128x128', type: 'image/jpeg' },
+          { src: currentTrack.image || DEFAULT_ALBUM_COVER, sizes: '192x192', type: 'image/jpeg' },
+          { src: currentTrack.image || DEFAULT_ALBUM_COVER, sizes: '256x256', type: 'image/jpeg' },
+          { src: currentTrack.image || DEFAULT_ALBUM_COVER, sizes: '384x384', type: 'image/jpeg' },
+          { src: currentTrack.image || DEFAULT_ALBUM_COVER, sizes: '512x512', type: 'image/jpeg' }
+        ]
+      })
+
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused'
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        togglePlay()
+      })
+      navigator.mediaSession.setActionHandler('pause', () => {
+        togglePlay()
+      })
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        handlePrev()
+      })
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        handleSmartNext(false)
+      })
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime != null) {
+          seekTo(details.seekTime)
+        }
+      })
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        seekRelative(-(details.seekOffset || 10))
+      })
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        seekRelative(details.seekOffset || 10)
+      })
+    } catch (err) {
+      console.warn('MediaSession initialization notice:', err)
+    }
+  }, [currentTrack, isPlaying])
 
   const changeVolume = (newVol) => {
     const clamped = Math.max(0, Math.min(1, newVol))
