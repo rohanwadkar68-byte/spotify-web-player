@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
-import { useMusicPlayer, detectSongMood } from '../../context/MusicPlayerContext.jsx'
+import { useMusicPlayer, detectSongMood, detectSongEra } from '../../context/MusicPlayerContext.jsx'
 import { DEFAULT_ALBUM_COVER } from '../../data/musicLibrary.js'
 import { fetchLyricsForTrack, parsePlainLyrics } from '../../utils/lyricsService.js'
 import AudioVisualizer from './AudioVisualizer.jsx'
@@ -311,8 +311,9 @@ export default function SpotifyFullPlayerModal({ isOpen, onClose }) {
                 </button>
               </div>
 
-              {/* Mood Pill */}
+              {/* Mood & Era Pill */}
               <span
+                data-testid="full-player-era-badge"
                 style={{
                   padding: '3px 8px',
                   borderRadius: '999px',
@@ -325,7 +326,13 @@ export default function SpotifyFullPlayerModal({ isOpen, onClose }) {
                   color: ambientColor
                 }}
               >
-                {mood.toUpperCase().replace('_', ' ')}
+                {detectSongEra(currentTrack) === 'retro_90s'
+                  ? '📻 90S NOSTALGIA'
+                  : mood === 'sad'
+                  ? '🌙 2 AM SAD REEL'
+                  : mood === 'reels_viral'
+                  ? '🔥 REELS VIRAL'
+                  : `✨ ${mood.toUpperCase().replace('_', ' ')} PEAK`}
               </span>
             </div>
           </div>
@@ -496,7 +503,7 @@ export default function SpotifyFullPlayerModal({ isOpen, onClose }) {
             {/* Song Meta (Title, Artist & Like Heart) */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
               <div style={{ minWidth: 0, flex: 1, paddingRight: 8 }}>
-                <h2 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 800, color: '#ffffff', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <h2 data-testid="full-player-song-title" style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 800, color: '#ffffff', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {currentTrack.title}
                 </h2>
                 <p style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255, 255, 255, 0.6)', margin: '1px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -620,6 +627,7 @@ export default function SpotifyFullPlayerModal({ isOpen, onClose }) {
 
               <button
                 type="button"
+                data-testid="full-player-next-btn"
                 onClick={nextTrack}
                 style={{
                   border: 'none',

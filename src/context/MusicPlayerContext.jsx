@@ -119,6 +119,34 @@ export function getTrackAmbientColor(track) {
   }
 }
 
+export function detectSongEra(track) {
+  if (!track) return 'modern_peak'
+  if (track.era) return track.era
+
+  const text = ((track.title || '') + ' ' + (track.artist || '') + ' ' + (track.album || '') + ' ' + (track.genre || '')).toLowerCase()
+  if (
+    text.includes('199') ||
+    text.includes('198') ||
+    text.includes('197') ||
+    text.includes('retro') ||
+    text.includes('classic romantic') ||
+    text.includes('udit narayan') ||
+    text.includes('kumar sanu') ||
+    text.includes('alka yagnik') ||
+    text.includes('jo jeeta wohi sikandar') ||
+    text.includes('ddlj') ||
+    text.includes('aashiqui') ||
+    text.includes('kishore kumar') ||
+    text.includes('lata mangeshkar') ||
+    text.includes('mohammed rafi') ||
+    text.includes('jo jeeta')
+  ) {
+    return 'retro_90s'
+  }
+
+  return 'modern_peak'
+}
+
 function decodeHtml(html) {
   if (!html) return ''
   const txt = document.createElement('textarea')
@@ -712,6 +740,7 @@ export function MusicPlayerProvider({ children }) {
    */
   const handleSmartNext = async (isAuto = false) => {
     const currentMood = detectSongMood(currentTrack)
+    const currentEra = detectSongEra(currentTrack)
     const primaryArtist = (currentTrack?.artist || '').split(',')[0].trim()
 
     // 1. Gather all candidate songs (from current queue + CURATED_SONGS)
@@ -722,24 +751,25 @@ export function MusicPlayerProvider({ children }) {
       }
     })
 
-    // 2. Filter unplayed candidates strictly matching the same mood and NOT in sessionPlayedIds
-    let unplayedMoodCandidates = allPool.filter((t) =>
+    // 2. Strict Vibe & Era Lock:
+    // Only pick songs that match the SAME MOOD and the SAME ERA!
+    // Never mix 90s vintage into a 2024 modern peak session, and vice-versa!
+    let unplayedMatches = allPool.filter((t) =>
       t.id !== currentTrack?.id &&
       detectSongMood(t) === currentMood &&
+      detectSongEra(t) === currentEra &&
       !sessionPlayedIds.has(t.id)
     )
 
-    // 3. Choose track
+    // 3. Choose next track
     let chosenTrack = null
-    if (unplayedMoodCandidates.length > 0) {
-      if (isShuffle) {
-        chosenTrack = unplayedMoodCandidates[Math.floor(Math.random() * unplayedMoodCandidates.length)]
-      } else {
-        chosenTrack = unplayedMoodCandidates[0]
-      }
+    if (unplayedMatches.length > 0) {
+      chosenTrack = isShuffle
+        ? unplayedMatches[Math.floor(Math.random() * unplayedMatches.length)]
+        : unplayedMatches[0]
     }
 
-    // 4. If no unplayed candidate in exact mood, try unplayed candidates from compatible moods
+    // 4. If no unplayed candidate in exact mood with same era, try unplayed candidates from compatible moods WITH SAME ERA!
     if (!chosenTrack) {
       const moodAffinity = {
         sad: ['lofi', 'romantic'],
@@ -752,6 +782,7 @@ export function MusicPlayerProvider({ children }) {
       const unplayedCompatible = allPool.filter((t) =>
         t.id !== currentTrack?.id &&
         compatibleMoods.includes(detectSongMood(t)) &&
+        detectSongEra(t) === currentEra &&
         !sessionPlayedIds.has(t.id)
       )
       if (unplayedCompatible.length > 0) {
@@ -766,23 +797,32 @@ export function MusicPlayerProvider({ children }) {
       playTrack(chosenTrack)
     }
 
-    // 6. Dynamic Fetch: Keep pipeline full of fresh unplayed songs from JioSaavn API matching mood
+    // 6. Dynamic Fetch: Keep pipeline full of fresh unplayed songs from JioSaavn API matching BOTH mood AND era!
     const remainingUnplayed = allPool.filter((t) =>
-      detectSongMood(t) === currentMood && !sessionPlayedIds.has(t.id)
+      detectSongMood(t) === currentMood &&
+      detectSongEra(t) === currentEra &&
+      !sessionPlayedIds.has(t.id)
     ).length
 
     if (remainingUnplayed <= 2 && !fetchingRecommendationsRef.current) {
       fetchingRecommendationsRef.current = true
       try {
-        let query = `${primaryArtist} hits`
-        if (currentMood === 'sad') {
-          query = 'sad hindi songs heart touching acoustic'
-        } else if (currentMood === 'reels_viral') {
-          query = 'instagram reels viral hindi songs'
-        } else if (currentMood === 'lofi') {
-          query = 'hindi lofi chill relaxed beats'
-        } else if (currentMood === 'romantic') {
-          query = `${primaryArtist} romantic songs`
+        let query = ''
+        if (currentEra === 'modern_peak') {
+          if (currentMood === 'sad') {
+            query = 'viral indie acoustic sad hindi 2024 2025 anuv jain local train'
+          } else if (currentMood === 'reels_viral') {
+            query = 'instagram reels viral songs hindi 2024 2025'
+          } else if (currentMood === 'lofi') {
+            query = 'hindi lofi chill relaxed acoustic 2024'
+          } else if (currentMood === 'punjabi') {
+            query = 'karan aujla ap dhillon trending punjabi 2024 2025'
+          } else {
+            query = `${primaryArtist} romantic hits modern 2024 2025`
+          }
+        } else {
+          // Retro 90s era
+          query = '90s bollywood romantic evergreen classics kumar sanu udit'
         }
 
         const res = await fetch('https://jiosaavn-api-nine.vercel.app/api/search/songs?query=' + encodeURIComponent(query))
@@ -803,7 +843,10 @@ export function MusicPlayerProvider({ children }) {
                   image: imgUrl,
                   url: dlUrl,
                   theme: currentMood,
-                  badge: currentMood === 'sad' ? '🌙 2 AM Sad Reel' : currentMood === 'reels_viral' ? '🔥 Reels Trending' : '✨ Auto-Vibe',
+                  era: currentEra,
+                  badge: currentEra === 'modern_peak'
+                    ? (currentMood === 'sad' ? '🌙 2 AM Sad Reel' : '🔥 Peak Trending')
+                    : '📻 90s Nostalgia',
                   duration: item.duration ? Math.floor(item.duration / 60) + ':' + (item.duration % 60 < 10 ? '0' : '') + (item.duration % 60) : '3:30'
                 }
               })
@@ -827,11 +870,16 @@ export function MusicPlayerProvider({ children }) {
       }
     }
 
-    // 7. Ultimate fallback if absolutely every track in the entire library & network is exhausted
+    // 7. Fallback if absolutely every track in the unplayed pool is exhausted:
     if (!chosenTrack) {
       setSessionPlayedIds(new Set([currentTrack?.id]))
-      const nextIdx = (currentIndex + 1) % queue.length
-      playTrack(queue[nextIdx])
+      const sameEraTracks = allPool.filter((t) => detectSongEra(t) === currentEra && t.id !== currentTrack?.id)
+      if (sameEraTracks.length > 0) {
+        playTrack(sameEraTracks[0])
+      } else {
+        const nextIdx = (currentIndex + 1) % queue.length
+        playTrack(queue[nextIdx])
+      }
     }
   }
 
@@ -1002,7 +1050,9 @@ export function MusicPlayerProvider({ children }) {
     togglePureSoundMode,
     soundEffectMode,
     setSoundEffectMode,
-    analyserNode
+    analyserNode,
+    detectSongEra,
+    currentEra: detectSongEra(currentTrack)
   }
 
 

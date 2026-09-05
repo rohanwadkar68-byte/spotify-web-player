@@ -122,6 +122,8 @@ Andheron mein bhi jo chamakta hai.`
     album: 'Jo Jeeta Wohi Sikandar',
     genre: 'Classic Romantic',
     theme: 'romantic',
+    era: 'retro_90s',
+    badge: '📻 90s Evergreen',
     image: 'https://c.saavncdn.com/852/Jo-Jeeta-Wohi-Sikandar-Hindi-1992-500x500.jpg',
     url: 'https://aac.saavncdn.com/852/9d335ee08b26f171a3d65e11f8819d52_sar_320.mp4',
     duration: '4:53',
