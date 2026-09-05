@@ -142,6 +142,7 @@ export default function SpotifyLibraryView({ onSelectPlaylist, onOpenCreatePlayl
           {customPlaylists.map((pl) => (
             <div
               key={pl.id}
+              data-testid={`custom-playlist-${pl.id}`}
               onClick={() => onSelectPlaylist && onSelectPlaylist(pl)}
               style={{
                 background: '#181818',
@@ -201,6 +202,7 @@ export default function SpotifyLibraryView({ onSelectPlaylist, onOpenCreatePlayl
           {SPOTIFY_PLAYLISTS.map((pl) => (
             <div
               key={pl.id}
+              data-testid={`featured-playlist-${pl.id}`}
               onClick={() => onSelectPlaylist && onSelectPlaylist(pl)}
               style={{
                 background: '#181818',

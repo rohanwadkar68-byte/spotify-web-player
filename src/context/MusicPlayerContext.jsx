@@ -9,6 +9,16 @@ const CUSTOM_PLAYLISTS_KEY = 'sneha_spotify_custom_playlists_v1'
 
 const DEFAULT_CUSTOM_PLAYLISTS = [
   {
+    id: 'my_playlist',
+    title: '✨ My Playlist',
+    description: 'Handpicked viral hits, indie anthems, aesthetic slowed & reverb, and soulful favorites.',
+    cover: 'https://c.saavncdn.com/978/Die-With-A-Smile-English-2024-20240816053358-500x500.jpg',
+    gradient: 'linear-gradient(135deg, #8a2387, #e94057, #f27121)',
+    emoji: '✨',
+    songIds: ["my_life_goes_on","my_taare","my_im_sorry_mom","my_koodappirannor","my_i_thought_i_saw_your_face_today","my_barsat","my_banjara","my_ishq_se_faniyar_female","my_bolve","my_imposter_syndrome","my_aarzu","my_jhoom_rnb","my_ambarsariya","my_love_me_not","my_mann_mera","my_paro","my_pal_pal","my_finding_her","my_aadmi_chutiya_hai","my_chidiya_vilen","my_die_with_a_smile","my_mitwa","my_line_without_a_hook","my_aasa_kooda","my_mockingbird","my_timro_pratiksha","my_heat_waves","my_sweater_weather","my_novocaine_slowed","my_me_gustas_tu","my_kings_and_queens","my_your_eyes","my_mood_24kgoldn","my_blue_yung_kai","my_three_fifteen","my_losing_interest","my_snap","my_summertime_sadness","my_dancin_krono","my_play_date","my_death_bed"],
+    isCustom: true
+  },
+  {
     id: 'sneha_birthday_special',
     title: "Sneha's Special Mix 🎂",
     description: 'Personal favorite songs curated for Sneha',
@@ -176,7 +186,14 @@ export function MusicPlayerProvider({ children }) {
   const [customPlaylists, setCustomPlaylists] = useState(() => {
     try {
       const saved = localStorage.getItem(CUSTOM_PLAYLISTS_KEY)
-      return saved ? JSON.parse(saved) : DEFAULT_CUSTOM_PLAYLISTS
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (!parsed.some((p) => p.id === 'my_playlist')) {
+          return [DEFAULT_CUSTOM_PLAYLISTS[0], ...parsed]
+        }
+        return parsed
+      }
+      return DEFAULT_CUSTOM_PLAYLISTS
     } catch {
       return DEFAULT_CUSTOM_PLAYLISTS
     }

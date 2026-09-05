@@ -259,6 +259,7 @@ function PlaylistTrackRow({ index, song, isCurrent, isPlaying, isLiked, isCustom
 
   return (
     <div
+      data-testid={`playlist-song-row-${song.id}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={onPlay}
