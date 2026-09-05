@@ -920,13 +920,15 @@ export const SPOTIFY_PLAYLISTS = [
 
 export const SEARCH_CHIPS = [
   'Arijit Singh',
+  'Diljit Dosanjh',
   'Taylor Swift',
   'Anuv Jain',
+  'The Weeknd',
   'Pritam',
-  'Atif Aslam',
-  'Kesariya',
-  'Tu Hai Kahan',
-  'Shershaah',
+  'Shreya Ghoshal',
   'AP Dhillon',
-  'Until I Found You'
+  'Billie Eilish',
+  'Bruno Mars',
+  'Atif Aslam',
+  'Sachin-Jigar'
 ]

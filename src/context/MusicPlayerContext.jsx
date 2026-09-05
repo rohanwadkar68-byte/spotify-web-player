@@ -148,7 +148,7 @@ function decodeHtml(html) {
 export function MusicPlayerProvider({ children }) {
   const [likedIds, setLikedIds] = useState(() => {
     try {
-      const saved = localStorage.getItem(LIKED_STORAGE_KEY) || localStorage.getItem('sneha_spotify_liked_v2')
+      const saved = localStorage.getItem(LIKED_STORAGE_KEY)
       return saved ? JSON.parse(saved) : []
     } catch {
       return []
@@ -157,7 +157,7 @@ export function MusicPlayerProvider({ children }) {
 
   const [recentlyPlayed, setRecentlyPlayed] = useState(() => {
     try {
-      const saved = localStorage.getItem(RECENTLY_PLAYED_KEY) || localStorage.getItem('sneha_spotify_recent_v1')
+      const saved = localStorage.getItem(RECENTLY_PLAYED_KEY)
       return saved ? JSON.parse(saved) : []
     } catch {
       return []
@@ -166,10 +166,10 @@ export function MusicPlayerProvider({ children }) {
 
   const [customPlaylists, setCustomPlaylists] = useState(() => {
     try {
-      const saved = localStorage.getItem(CUSTOM_PLAYLISTS_KEY) || localStorage.getItem('sneha_spotify_custom_playlists_v1')
+      const saved = localStorage.getItem(CUSTOM_PLAYLISTS_KEY)
       if (saved) {
         let parsed = JSON.parse(saved)
-        // Purge legacy test/personal playlists
+        // Purge any legacy test/personal playlists
         parsed = parsed.filter((p) => p.id !== 'sneha_birthday_special' && p.id !== 'my_playlist')
         return parsed
       }
@@ -178,6 +178,15 @@ export function MusicPlayerProvider({ children }) {
       return DEFAULT_CUSTOM_PLAYLISTS
     }
   })
+
+  // One-time client cleanup of legacy keys from client browser
+  useEffect(() => {
+    try {
+      ['sneha_spotify_liked_v2', 'sneha_spotify_recent_v1', 'sneha_spotify_custom_playlists_v1', 'sneha_spotify_pure_sound_v1', 'sneha_spotify_sound_effect_v1', 'sneha_spotify_live_trends_v2'].forEach((k) => {
+        localStorage.removeItem(k)
+      })
+    } catch {}
+  }, [])
 
   useEffect(() => {
     try {
@@ -207,7 +216,7 @@ export function MusicPlayerProvider({ children }) {
   // Pure Studio Peace Audio Mode (default enabled for warmth and soft dynamics)
   const [pureSoundMode, setPureSoundMode] = useState(() => {
     try {
-      const saved = localStorage.getItem(PURE_SOUND_KEY) || localStorage.getItem('sneha_spotify_pure_sound_v1')
+      const saved = localStorage.getItem(PURE_SOUND_KEY)
       return saved !== null ? JSON.parse(saved) : true
     } catch {
       return true
@@ -217,7 +226,7 @@ export function MusicPlayerProvider({ children }) {
   // Advanced Sound Modes: 'normal' | '8d_spatial' | 'slowed_reverb' | 'nightcore'
   const [soundEffectMode, setSoundEffectModeState] = useState(() => {
     try {
-      const saved = localStorage.getItem(SOUND_EFFECT_KEY) || localStorage.getItem('sneha_spotify_sound_effect_v1')
+      const saved = localStorage.getItem(SOUND_EFFECT_KEY)
       return saved || 'normal'
     } catch {
       return 'normal'
@@ -1071,7 +1080,7 @@ export function MusicPlayerProvider({ children }) {
     const newPl = {
       id: 'custom_' + Date.now(),
       title: title?.trim() || 'My Playlist #' + (customPlaylists.length + 1),
-      description: description?.trim() || 'Created with love for Sneha',
+      description: description?.trim() || 'Curated user collection',
       gradient: gradient || 'linear-gradient(135deg, #1ed760, #1db954)',
       emoji: emoji || '🎵',
       songIds: [],

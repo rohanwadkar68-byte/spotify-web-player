@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useMusicPlayer } from '../../context/MusicPlayerContext.jsx'
 import { DEFAULT_ALBUM_COVER } from '../../data/musicLibrary.js'
 import EqualizerBars from './EqualizerBars.jsx'
@@ -37,7 +37,36 @@ export default function FloatingDockPlayer({ onOpenFullPlayer }) {
   } = useMusicPlayer()
 
   const [showVolumeSlider, setShowVolumeSlider] = useState(false)
+  const [showShareToast, setShowShareToast] = useState(false)
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768)
+
+  const handleShare = async (e) => {
+    e && e.stopPropagation && e.stopPropagation()
+    if (!currentTrack) return
+    const url = `${window.location.origin}/?song=${encodeURIComponent(currentTrack.id)}`
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: `${currentTrack.title} - Sensei Music`,
+          text: `Listen to ${currentTrack.title} by ${currentTrack.artist} on Sensei Music`,
+          url
+        })
+        return
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.warn('Share notice:', err)
+        }
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      setShowShareToast(true)
+      setTimeout(() => setShowShareToast(false), 2200)
+    } catch {
+      setShowShareToast(true)
+      setTimeout(() => setShowShareToast(false), 2200)
+    }
+  }
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -277,6 +306,30 @@ export default function FloatingDockPlayer({ onOpenFullPlayer }) {
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
               )}
+            </button>
+
+            {/* Share */}
+            <button
+              type="button"
+              onClick={handleShare}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                padding: 4,
+                display: 'flex',
+                alignItems: 'center',
+                color: 'rgba(255, 255, 255, 0.75)'
+              }}
+              title="Share Track"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
             </button>
 
             {/* Play/Pause */}
@@ -722,6 +775,39 @@ export default function FloatingDockPlayer({ onOpenFullPlayer }) {
           </button>
         </div>
       </motion.div>
+
+      {/* Link Copied Toast Notification */}
+      <AnimatePresence>
+        {showShareToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 15, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.92 }}
+            style={{
+              position: 'fixed',
+              bottom: isMobile ? 80 : 90,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(20, 20, 26, 0.96)',
+              border: '1px solid rgba(30, 215, 96, 0.6)',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.6), 0 0 15px rgba(30, 215, 96, 0.25)',
+              color: '#ffffff',
+              padding: '8px 20px',
+              borderRadius: 999,
+              fontSize: '12px',
+              fontWeight: 800,
+              zIndex: 999999,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              pointerEvents: 'none'
+            }}
+          >
+            <span style={{ color: '#1ed760', fontSize: '14px' }}>✓</span>
+            <span>Link copied to clipboard!</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

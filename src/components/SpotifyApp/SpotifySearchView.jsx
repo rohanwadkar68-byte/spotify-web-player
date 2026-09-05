@@ -251,7 +251,7 @@ export default function SpotifySearchView({ searchQuery, setSearchQuery }) {
       {loading && (
         <div style={{ textAlign: 'center', padding: '60px 0', color: '#b3b3b3' }}>
           <div style={{ fontSize: '32px', marginBottom: 10 }}>⏳</div>
-          <div style={{ fontSize: '15px', fontWeight: 600 }}>Searching songs for Sneha...</div>
+          <div style={{ fontSize: '15px', fontWeight: 600 }}>Searching 100M+ songs & podcasts...</div>
         </div>
       )}
 

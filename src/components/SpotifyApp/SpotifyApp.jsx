@@ -27,6 +27,7 @@ export default function SpotifyApp() {
   const {
     currentTrack,
     isPlaying,
+    playTrack,
     togglePlay,
     seekRelative,
     changeVolume,
@@ -43,6 +44,20 @@ export default function SpotifyApp() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  // Handle URL deep linking (e.g. ?song=kesariya)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const songParam = params.get('song')
+      if (songParam) {
+        const found = CURATED_SONGS.find((s) => s.id === songParam || s.title?.toLowerCase() === songParam.toLowerCase())
+        if (found) {
+          playTrack(found)
+        }
+      }
+    } catch {}
+  }, [playTrack])
 
   // Global Keyboard Shortcuts (Space: Play/Pause, Arrows: Seek/Vol, M: Mute, L: Like)
   useEffect(() => {
