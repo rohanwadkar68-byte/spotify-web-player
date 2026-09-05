@@ -22,6 +22,7 @@ export default function FloatingIslandNav({
 
   const navItems = [
     { id: 'home', label: 'Discover', icon: '✨' },
+    { id: 'search', label: 'Search', icon: '🔍' },
     { id: 'playlists', label: 'Playlists', icon: '🎵' },
     { id: 'trends', label: 'Viral Radar', icon: '🔥' },
     { id: 'lyrics', label: 'Lyrics', icon: '🎤' },

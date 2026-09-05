@@ -166,6 +166,7 @@ export function MusicPlayerProvider({ children }) {
   const [queue, setQueue] = useState(CURATED_SONGS)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [currentTrack, setCurrentTrack] = useState(CURATED_SONGS[0])
+  const [sessionPlayedIds, setSessionPlayedIds] = useState(() => new Set([CURATED_SONGS[0]?.id || 'kesariya']))
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -601,6 +602,13 @@ export function MusicPlayerProvider({ children }) {
       return [track, ...filtered].slice(0, 20)
     })
 
+    // Track played in session for Never-Repeat smart auto-advance
+    setSessionPlayedIds((prev) => {
+      const next = new Set(prev)
+      next.add(track.id)
+      return next
+    })
+
     // Activate Web Audio DSP Chain for Studio Peace sound
     try {
       if (audioCtxRef.current) {
@@ -703,62 +711,67 @@ export function MusicPlayerProvider({ children }) {
    * Auto-fetches from JioSaavn matching this exact mood when queue is running low.
    */
   const handleSmartNext = async (isAuto = false) => {
-    if (!queue || queue.length === 0) return
-
     const currentMood = detectSongMood(currentTrack)
     const primaryArtist = (currentTrack?.artist || '').split(',')[0].trim()
 
-    let nextIdx = -1
+    // 1. Gather all candidate songs (from current queue + CURATED_SONGS)
+    const allPool = [...(queue || [])]
+    CURATED_SONGS.forEach((s) => {
+      if (!allPool.some((t) => t.id === s.id)) {
+        allPool.push(s)
+      }
+    })
 
-    if (isShuffle) {
-      // Shuffle mode: Pick a random track matching the current mood
-      const moodMatches = []
-      queue.forEach((t, idx) => {
-        if (idx !== currentIndex && detectSongMood(t) === currentMood) {
-          moodMatches.push(idx)
-        }
-      })
+    // 2. Filter unplayed candidates strictly matching the same mood and NOT in sessionPlayedIds
+    let unplayedMoodCandidates = allPool.filter((t) =>
+      t.id !== currentTrack?.id &&
+      detectSongMood(t) === currentMood &&
+      !sessionPlayedIds.has(t.id)
+    )
 
-      if (moodMatches.length > 0) {
-        nextIdx = moodMatches[Math.floor(Math.random() * moodMatches.length)]
+    // 3. Choose track
+    let chosenTrack = null
+    if (unplayedMoodCandidates.length > 0) {
+      if (isShuffle) {
+        chosenTrack = unplayedMoodCandidates[Math.floor(Math.random() * unplayedMoodCandidates.length)]
       } else {
-        const otherIdxs = queue.map((_, i) => i).filter((i) => i !== currentIndex)
-        nextIdx = otherIdxs.length > 0 ? otherIdxs[Math.floor(Math.random() * otherIdxs.length)] : 0
-      }
-    } else {
-      // Sequential smart mode:
-      // Priority 1: Look ahead in queue for next song with same mood
-      for (let i = currentIndex + 1; i < queue.length; i++) {
-        if (detectSongMood(queue[i]) === currentMood) {
-          nextIdx = i
-          break
-        }
-      }
-
-      // Priority 2: If none ahead, look backwards in queue for any other song with same mood
-      if (nextIdx === -1) {
-        for (let i = 0; i < currentIndex; i++) {
-          if (detectSongMood(queue[i]) === currentMood) {
-            nextIdx = i
-            break
-          }
-        }
-      }
-
-      // Priority 3: Fallback to next track in queue
-      if (nextIdx === -1) {
-        nextIdx = (currentIndex + 1) % queue.length
+        chosenTrack = unplayedMoodCandidates[0]
       }
     }
 
-    const nextTrack = queue[nextIdx]
-    if (nextTrack) {
-      playTrack(nextTrack)
+    // 4. If no unplayed candidate in exact mood, try unplayed candidates from compatible moods
+    if (!chosenTrack) {
+      const moodAffinity = {
+        sad: ['lofi', 'romantic'],
+        romantic: ['lofi', 'sad', 'reels_viral'],
+        reels_viral: ['punjabi', 'romantic'],
+        lofi: ['sad', 'romantic'],
+        punjabi: ['reels_viral']
+      }
+      const compatibleMoods = moodAffinity[currentMood] || ['romantic', 'reels_viral']
+      const unplayedCompatible = allPool.filter((t) =>
+        t.id !== currentTrack?.id &&
+        compatibleMoods.includes(detectSongMood(t)) &&
+        !sessionPlayedIds.has(t.id)
+      )
+      if (unplayedCompatible.length > 0) {
+        chosenTrack = isShuffle
+          ? unplayedCompatible[Math.floor(Math.random() * unplayedCompatible.length)]
+          : unplayedCompatible[0]
+      }
     }
 
-    // Auto-fetch mood-matching recommendations from JioSaavn when matching songs are low
-    const remainingMoodMatches = queue.slice(currentIndex + 1).filter((s) => detectSongMood(s) === currentMood).length
-    if (remainingMoodMatches <= 1 && !fetchingRecommendationsRef.current) {
+    // 5. If we found an unplayed track, play it immediately!
+    if (chosenTrack) {
+      playTrack(chosenTrack)
+    }
+
+    // 6. Dynamic Fetch: Keep pipeline full of fresh unplayed songs from JioSaavn API matching mood
+    const remainingUnplayed = allPool.filter((t) =>
+      detectSongMood(t) === currentMood && !sessionPlayedIds.has(t.id)
+    ).length
+
+    if (remainingUnplayed <= 2 && !fetchingRecommendationsRef.current) {
       fetchingRecommendationsRef.current = true
       try {
         let query = `${primaryArtist} hits`
@@ -777,7 +790,7 @@ export function MusicPlayerProvider({ children }) {
           const data = await res.json()
           const items = data?.data?.results || []
           if (items.length > 0) {
-            const existingIds = new Set(queue.map((s) => s.id))
+            const existingIds = new Set([...(queue || []).map((s) => s.id), ...sessionPlayedIds])
             const newTracks = items
               .map((item) => {
                 const dlUrl = item.downloadUrl?.[item.downloadUrl.length - 1]?.url || item.downloadUrl?.[0]?.url || item.url
@@ -795,18 +808,30 @@ export function MusicPlayerProvider({ children }) {
                 }
               })
               .filter((t) => !!t.url && !existingIds.has(t.id))
-              .slice(0, 5)
+              .slice(0, 6)
 
             if (newTracks.length > 0) {
               setQueue((prev) => [...prev, ...newTracks])
+              // If we were waiting for an unplayed track because local library was depleted, play first fresh fetched track!
+              if (!chosenTrack && newTracks[0]) {
+                playTrack(newTracks[0])
+                chosenTrack = newTracks[0]
+              }
             }
           }
         }
       } catch (e) {
-        console.warn('Auto-recommendation error:', e)
+        console.warn('Auto-recommendation fetch error:', e)
       } finally {
         fetchingRecommendationsRef.current = false
       }
+    }
+
+    // 7. Ultimate fallback if absolutely every track in the entire library & network is exhausted
+    if (!chosenTrack) {
+      setSessionPlayedIds(new Set([currentTrack?.id]))
+      const nextIdx = (currentIndex + 1) % queue.length
+      playTrack(queue[nextIdx])
     }
   }
 

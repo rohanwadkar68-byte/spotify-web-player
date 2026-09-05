@@ -123,12 +123,72 @@ export default function SpotifySearchView({ searchQuery, setSearchQuery }) {
   const moreResults = results.slice(5)
 
   return (
-    <div style={{ padding: '0 24px 80px' }}>
+    <div style={{ padding: '0 16px 80px' }}>
+      {/* Prominent Global Search Input Bar */}
+      <div style={{ margin: '8px 0 20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            borderRadius: 999,
+            padding: '10px 18px',
+            maxWidth: 620,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" color="#1ed760">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            data-testid="search-input-field"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search songs, artists, reels viral, podcasts..."
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: '#ffffff',
+              fontSize: '14px',
+              fontWeight: 600
+            }}
+            autoFocus
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                color: '#ffffff',
+                width: 22,
+                height: 22,
+                borderRadius: '50%',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px'
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* CASE 1: EMPTY SEARCH — BROWSE ALL GENRE CARDS */}
       {!searchQuery.trim() && (
         <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', margin: '0 0 20px' }}>
-            Browse all
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff', margin: '0 0 16px' }}>
+            Browse all genres
           </h2>
 
           <div style={{

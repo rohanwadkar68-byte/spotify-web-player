@@ -110,6 +110,29 @@ export default function SpotifyApp({ onBackToWorld }) {
                 {/* Centerpiece Soundstage Hero (Mobile Responsive) */}
                 <SoundstageHero onOpenFullPlayer={() => setIsFullPlayerOpen(true)} />
 
+                {/* Quick Search Banner */}
+                <div
+                  data-testid="quick-search-bar"
+                  onClick={() => setActiveView('search')}
+                  className="bento-card"
+                  style={{
+                    margin: '14px 0 16px',
+                    padding: '12px 18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    cursor: 'pointer',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: 999
+                  }}
+                >
+                  <span style={{ fontSize: '16px' }}>🔍</span>
+                  <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.65)', fontWeight: 600 }}>
+                    What do you want to play? Search Hindi songs, artists, trends...
+                  </span>
+                </div>
+
                 {/* Spatial Bento Discovery Hub with Liked Songs, Playlists, and Song rows */}
                 <BentoDiscoveryGrid
                   onSelectPlaylist={handleSelectPlaylist}
@@ -458,6 +481,26 @@ export default function SpotifyApp({ onBackToWorld }) {
             >
               <span>✨</span>
               <span>Discover</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveView('search')}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                color: activeView === 'search' ? '#1ed760' : 'rgba(255,255,255,0.6)',
+                fontSize: '11px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '4px 8px',
+                cursor: 'pointer'
+              }}
+            >
+              <span>🔍</span>
+              <span>Search</span>
             </button>
 
             <button
